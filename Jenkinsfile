@@ -11,39 +11,34 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/Sovanda-Mith/FinalDevOps.git'
+                // This clones repo to workspace root
             }
         }
 
         stage('Install PHP Dependencies') {
             steps {
-                dir('FinalDevOps') {
-                    sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
-                }
+                sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
             }
         }
 
         stage('Install JS Dependencies & Build') {
             steps {
-                dir('FinalDevOps') {
-                    sh """
-                        ${NPM} install
-                        ${NPM} run build
-                    """
-                }
+                sh """
+                    ${NPM} install
+                    ${NPM} run build
+                """
             }
         }
 
         stage('Run Laravel Tests') {
             steps {
-                dir('FinalDevOps') {
-                    sh "${PHP} artisan test --env=testing"
-                }
+                sh "${PHP} artisan test --env=testing"
             }
         }
 
         stage('Deploy with Ansible') {
             steps {
-                dir('FinalDevOps/ansible') {
+                dir('ansible') {
                     sh "ansible-playbook -i inventory.ini playbook.yml"
                 }
             }
