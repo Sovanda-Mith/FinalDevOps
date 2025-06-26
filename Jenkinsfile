@@ -20,6 +20,22 @@ pipeline {
             }
         }
 
+        stage('Install Node.js & npm') {
+            steps {
+                sh '''
+                    if ! command -v npm >/dev/null 2>&1; then
+                        echo "Installing Node.js and npm..."
+                        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                        sudo apt-get install -y nodejs
+                    else
+                        echo "Node.js already installed."
+                    fi
+                    node -v
+                    npm -v
+                '''
+            }
+        }
+
         stage('Install JS Dependencies & Build') {
             steps {
                 sh """
