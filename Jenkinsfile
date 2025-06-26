@@ -68,4 +68,21 @@ pipeline {
 
                 mail to: "sovandam6@gmail.com, ${committerEmail}",
                      cc: 'srengty@gmail.com',
-                     s
+                     subject: "❌ Laravel Build/Deploy Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: """Hello ${committerEmail},
+
+Your recent commit appears to have caused the build or deployment to fail.
+
+🔧 Job: ${env.JOB_NAME}
+🔢 Build: ${env.BUILD_NUMBER}
+🔗 Console Output: ${env.BUILD_URL}console
+
+Please review the build logs and address the issue.
+
+Regards,
+Jenkins CI
+"""
+            }
+        }
+    }
+}
