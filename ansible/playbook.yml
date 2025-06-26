@@ -7,6 +7,13 @@
       file:
         path: /var/www/html
         state: directory
+
+    - name: Install Node.js and npm on Alpine
+      apk:
+        name: nodejs npm
+        state: present
+      become: true
+
     - name: Reset Git changes
       shell: |
         cd /var/www/html
@@ -38,6 +45,21 @@
         cd /var/www/html
         cp .env.testing.example .env.testing || true
         php artisan config:clear
+
+    - name: Generate app key for SQLite test config
+      shell: |
+        cd /var/www/html
+        php artisan key:generate --env=testing
+
+    - name: Create SQLite database file
+      shell: |
+        cd /var/www/html
+        touch database/database.sqlite
+
+    - name: Run test database migrations
+      shell: |
+        cd /var/www/html
+        php artisan migrate --database=test
 
     - name: Run Laravel tests using SQLite
       shell: |
