@@ -1,12 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        COMPOSER = 'composer'
-        PHP = 'php'
-        NPM = 'npm'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -22,22 +16,22 @@ pipeline {
 
         stage('Install PHP Dependencies') {
             steps {
-                sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
+                sh "composer install --no-interaction --prefer-dist --optimize-autoloader"
             }
         }
 
         stage('Install JS Dependencies & Build') {
             steps {
                 sh """
-                    ${NPM} install
-                    ${NPM} run build
+                    npm install
+                    npm run build
                 """
             }
         }
 
         stage('Run Laravel Tests') {
             steps {
-                sh "${PHP} artisan test --env=testing"
+                sh "php artisan test"
             }
         }
 
