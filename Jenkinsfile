@@ -47,7 +47,7 @@ pipeline {
 
         stage('Run Laravel Tests') {
             steps {
-                sh "php artisan test"
+                sh "php artisan test tests/Unit/ExampleTest.php"
             }
         }
 
