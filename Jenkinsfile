@@ -5,7 +5,6 @@ pipeline {
         COMPOSER = 'composer'
         PHP = 'php'
         NPM = 'npm'
-        APP_DIR = 'CICD_Mith_Sovanda'
     }
 
     stages {
@@ -17,34 +16,28 @@ pipeline {
 
         stage('Install PHP Dependencies') {
             steps {
-                dir("${APP_DIR}") {
-                    sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
-                }
+                sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
             }
         }
 
         stage('Install JS Dependencies & Build') {
             steps {
-                dir("${APP_DIR}") {
-                    sh """
-                        ${NPM} install
-                        ${NPM} run build
-                    """
-                }
+                sh """
+                    ${NPM} install
+                    ${NPM} run build
+                """
             }
         }
 
         stage('Run Laravel Tests') {
             steps {
-                dir("${APP_DIR}") {
-                    sh "${PHP} artisan test --env=testing"
-                }
+                sh "${PHP} artisan test --env=testing"
             }
         }
 
         stage('Deploy with Ansible') {
             steps {
-                dir("${APP_DIR}/ansible") {
+                dir('ansible') {
                     sh "ansible-playbook -i inventory.ini playbook.yml"
                 }
             }
@@ -62,7 +55,7 @@ pipeline {
         failure {
             script {
                 def committerEmail = sh(
-                    script: "cd ${APP_DIR} && git log -1 --pretty=format:'%ae'",
+                    script: "git log -1 --pretty=format:'%ae'",
                     returnStdout: true
                 ).trim()
 
