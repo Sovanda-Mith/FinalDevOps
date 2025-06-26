@@ -60,7 +60,7 @@ pipeline {
                     returnStdout: true
                 ).trim()
 
-                mail to: "${committerEmail}",
+                mail to: "${committerEmail}, sovandam6@gmail.com",
                      cc: 'srengty@gmail.com',
                      subject: "❌ Laravel Build/Deploy Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                      body: """Hello ${committerEmail},
