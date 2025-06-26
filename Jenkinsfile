@@ -14,6 +14,12 @@ pipeline {
             }
         }
 
+        stage('Debug Workspace') {
+            steps {
+                sh 'pwd && ls -lah'
+            }
+        }
+
         stage('Install PHP Dependencies') {
             steps {
                 sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
