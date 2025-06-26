@@ -1,0 +1,50 @@
+---
+- name: Deploy Laravel app
+  hosts: web
+  become: yes
+  tasks:
+    - name: Ensure working directory exists
+      file:
+        path: /var/www/html
+        state: directory
+    - name: Reset Git changes
+      shell: |
+        cd /var/www/html
+        git reset --hard HEAD
+        git clean -fd
+
+    - name: Pull latest changes from GitHub
+      shell: |
+        cd /var/www/html
+        git pull
+
+    - name: Install Composer dependencies
+      shell: |
+        cd /var/www/html
+        composer install --no-interaction --prefer-dist --optimize-autoloader
+
+    - name: Install NPM dependencies
+      shell: |
+        cd /var/www/html
+        npm install
+
+    - name: Run NPM build
+      shell: |
+        cd /var/www/html
+        npm run build
+
+    - name: Switch to SQLite test config
+      shell: |
+        cd /var/www/html
+        cp .env.testing.example .env.testing || true
+        php artisan config:clear
+
+    - name: Run Laravel tests using SQLite
+      shell: |
+        cd /var/www/html
+        php artisan test --env=testing
+
+    - name: Backup MySQL database
+      shell: |
+        mkdir -p /root/backups
+        mysqldump -h 127.0.0.1 -uroot -pHello@123 mithsovanda-db > /root/backups/backup.sql
