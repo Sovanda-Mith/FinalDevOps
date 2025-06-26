@@ -30,6 +30,14 @@ spec:
             - name: app-code
               mountPath: /var/www/html
 
+        - name: copy-env-example
+          image: alpine
+          command:
+            ["sh", "-c", "cp /var/www/html/.env.example /var/www/html/.env"]
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+
         - name: composer-install
           image: composer:2
           workingDir: /var/www/html
@@ -38,9 +46,25 @@ spec:
             - name: app-code
               mountPath: /var/www/html
 
+        - name: install-node-dependencies
+          image: node:22-alpine
+          workingDir: /var/www/html
+          command: ["npm", "install"]
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+
+        - name: build-assets
+          image: node:22-alpine
+          workingDir: /var/www/html
+          command: ["npm", "run", "build"]
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+
       containers:
         - name: web
-          image: richarvey/nginx-php-fpm
+          image: richarvey/nginx-php-fpm:latest
           ports:
             - containerPort: 8080
             - containerPort: 22
@@ -56,15 +80,17 @@ spec:
               value: root
             - name: DB_PASSWORD
               value: Hello@123
-          command: ["/bin/bash", "-c"]
+          command: ["/bin/sh", "-c"]
           args:
             - |
-              apt-get update && apt-get install -y openssh-server && \
+              apk update && \
+              apk add --no-cache openssh && \
               echo 'root:root' | chpasswd && \
               sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
               mkdir -p /run/sshd && \
-              service ssh start && \
-              /start.sh
+              /usr/sbin/sshd && \
+              cd /var/www/html && php artisan migrate --force || true && \
+              exec /start.sh
 
         - name: mysql
           image: mysql:8.0.36
@@ -74,8 +100,6 @@ spec:
               value: Hello@123
             - name: MYSQL_DATABASE
               value: mithsovanda-db
-            - name: MYSQL_USER
-              value: root
             - name: MYSQL_PASSWORD
               value: Hello@123
           ports:

@@ -1,0 +1,16 @@
+Tables_in_mithsovanda-db
+bookings
+cache
+cache_locks
+failed_jobs
+favorites
+job_batches
+jobs
+migrations
+password_reset_tokens
+payments
+reviews
+sessions
+terrain_images
+terrains
+users
