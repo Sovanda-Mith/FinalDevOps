@@ -59,7 +59,7 @@
     - name: Run test database migrations
       shell: |
         cd /var/www/html
-        php artisan migrate --database=test
+        php artisan migrate --env=testing --database=sqlite
 
     - name: Run Laravel tests using SQLite
       shell: |
