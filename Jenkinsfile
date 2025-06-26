@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        COMPOSER_HOME = "${WORKSPACE}/.composer"
         COMPOSER = 'composer'
         PHP = 'php'
         NPM = 'npm'
