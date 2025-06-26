@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+
+    environment {
+        COMPOSER = 'composer'
+        PHP = 'php'
+        NPM = 'npm'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Sovanda-Mith/FinalDevOps.git'
+            }
+        }
+
+        stage('Install PHP Dependencies') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
+                }
+            }
+        }
+
+        stage('Install JS Dependencies & Build') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh """
+                        ${NPM} install
+                        ${NPM} run build
+                    """
+                }
+            }
+        }
+
+        stage('Run Laravel Tests') {
+            steps {
+                sh "${PHP} artisan test"
+            }
+        }
+
+        stage('Deploy with Ansible') {
+            steps {
+                dir('ansible') {
+                    sh "ansible-playbook -i inventory.ini playbook.yml"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: 'sovandam6@gmail.com',
+                 cc: 'srengty@gmail.com',
+                 subject: "✅ Laravel Build & Deploy Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Your Laravel app was successfully built and deployed.\n\nView Build: ${BUILD_URL}"
+        }
+
+        failure {
+            script {
+                def committerEmail = sh(
+                    script: "git log -1 --pretty=format:'%ae'",
+                    returnStdout: true
+                ).trim()
+
+                mail to: "${committerEmail}",
+                     cc: 'srengty@gmail.com',
+                     subject: "❌ Laravel Build/Deploy Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: """Hello ${committerEmail},
+
+Your recent commit appears to have caused the build or deployment to fail.
+
+🔧 Job: ${env.JOB_NAME}
+🔢 Build: ${env.BUILD_NUMBER}
+🔗 Console Output: ${env.BUILD_URL}console
+
+Please review the build logs and address the issue.
+
+Regards,
+Jenkins CI
+"""
+            }
+        }
+    }
+}
