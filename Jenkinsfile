@@ -16,7 +16,7 @@ pipeline {
 
         stage('Install PHP Dependencies') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
+                dir('FinalDevOps') {
                     sh "${COMPOSER} install --no-interaction --prefer-dist --optimize-autoloader"
                 }
             }
@@ -24,7 +24,7 @@ pipeline {
 
         stage('Install JS Dependencies & Build') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
+                dir('FinalDevOps') {
                     sh """
                         ${NPM} install
                         ${NPM} run build
@@ -35,13 +35,15 @@ pipeline {
 
         stage('Run Laravel Tests') {
             steps {
-                sh "${PHP} artisan test"
+                dir('FinalDevOps') {
+                    sh "${PHP} artisan test --env=testing"
+                }
             }
         }
 
         stage('Deploy with Ansible') {
             steps {
-                dir('ansible') {
+                dir('FinalDevOps/ansible') {
                     sh "ansible-playbook -i inventory.ini playbook.yml"
                 }
             }
